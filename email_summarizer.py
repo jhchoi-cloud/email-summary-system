@@ -131,7 +131,7 @@ def extract_body(payload: dict) -> str:
 def summarize_with_gemini(emails: list[dict], api_key: str) -> str:
     """Gemini API를 사용하여 이메일 목록 요약"""
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.0-flash')
 
     if not emails:
         return "오늘 수신된 이메일이 없습니다."
