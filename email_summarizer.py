@@ -1,7 +1,7 @@
 """
 Gmail 이메일 요약 모듈
 - Gmail API로 이메일 수집
-- Claude API로 요약 생성
+- Gemini API로 요약 생성
 - Telegram으로 알림 전송
 """
 
@@ -12,7 +12,7 @@ import requests
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import anthropic
+import google.generativeai as genai
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -128,9 +128,10 @@ def extract_body(payload: dict) -> str:
     return body.strip()
 
 
-def summarize_with_claude(emails: list[dict], api_key: str) -> str:
-    """Claude API를 사용하여 이메일 목록 요약"""
-    client = anthropic.Anthropic(api_key=api_key)
+def summarize_with_gemini(emails: list[dict], api_key: str) -> str:
+    """Gemini API를 사용하여 이메일 목록 요약"""
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
     if not emails:
         return "오늘 수신된 이메일이 없습니다."
@@ -157,13 +158,8 @@ def summarize_with_claude(emails: list[dict], api_key: str) -> str:
 
 간결하고 실용적으로 요약해주세요."""
 
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    return message.content[0].text
+    response = model.generate_content(prompt)
+    return response.text
 
 
 def send_telegram(token: str, chat_id: str, message: str) -> bool:
@@ -204,12 +200,12 @@ def run_daily_summary() -> dict:
         emails = fetch_recent_emails(service, hours=24)
         result['email_count'] = len(emails)
 
-        # Claude로 요약
-        anthropic_api_key = config.get('anthropic_api_key') or os.environ.get('ANTHROPIC_API_KEY', '')
-        if not anthropic_api_key:
-            raise ValueError("ANTHROPIC_API_KEY가 설정되지 않았습니다.")
+        # Gemini로 요약
+        gemini_api_key = config.get('gemini_api_key') or os.environ.get('GEMINI_API_KEY', '')
+        if not gemini_api_key:
+            raise ValueError("GEMINI_API_KEY가 설정되지 않았습니다.")
 
-        summary = summarize_with_claude(emails, anthropic_api_key)
+        summary = summarize_with_gemini(emails, gemini_api_key)
         result['summary'] = summary
 
         # Telegram 전송

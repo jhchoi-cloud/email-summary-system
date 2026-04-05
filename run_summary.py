@@ -15,8 +15,8 @@ if config_file.exists():
         config = json.load(f)
 
 # 환경변수 우선 적용
-if os.environ.get('ANTHROPIC_API_KEY'):
-    config['anthropic_api_key'] = os.environ['ANTHROPIC_API_KEY']
+if os.environ.get('GEMINI_API_KEY'):
+    config['gemini_api_key'] = os.environ['GEMINI_API_KEY']
 if os.environ.get('TELEGRAM_BOT_TOKEN'):
     config['telegram_bot_token'] = os.environ['TELEGRAM_BOT_TOKEN']
 if os.environ.get('TELEGRAM_CHAT_ID'):
