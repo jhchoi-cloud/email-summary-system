@@ -12,7 +12,7 @@ import requests
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import google.generativeai as genai
+from google import genai
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -130,8 +130,7 @@ def extract_body(payload: dict) -> str:
 
 def summarize_with_gemini(emails: list[dict], api_key: str) -> str:
     """Gemini API를 사용하여 이메일 목록 요약"""
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    client = genai.Client(api_key=api_key)
 
     if not emails:
         return "오늘 수신된 이메일이 없습니다."
@@ -158,7 +157,7 @@ def summarize_with_gemini(emails: list[dict], api_key: str) -> str:
 
 간결하고 실용적으로 요약해주세요."""
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(model='gemini-2.0-flash', contents=prompt)
     return response.text
 
 
